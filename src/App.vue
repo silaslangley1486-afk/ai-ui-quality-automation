@@ -8,6 +8,26 @@
           A controlled test target for Playwright and accessibility testing. Send a prompt and review the conversation below.
         </p>
       </div>
+
+      <div class="header-controls">
+        <div class="control-group">
+          <label for="model-select">Model:</label>
+          <select id="model-select" class="model-select" v-model="selectedModel">
+            <option value="model-v1">Model V1</option>
+            <option value="model-v2">Model V2</option>
+            <option value="model-v3">Model V3</option>
+          </select>
+        </div>
+
+        <label class="error-toggle">
+          <input type="checkbox" v-model="errorSimulationEnabled" />
+          Enable error simulation
+        </label>
+
+        <button class="clear-button" type="button" @click="clearConversation">
+          Clear conversation
+        </button>
+      </div>
     </header>
 
     <section class="conversation" aria-labelledby="conversation-title">
@@ -21,7 +41,7 @@
           <li
             v-for="message in messages"
             :key="message.id"
-            :class="['message', message.role]"
+            :class="['message', message.role, message.state]"
             :aria-label="message.role === 'assistant' ? 'Assistant message' : 'User message'"
             :data-testid="message.role === 'assistant' ? 'assistant-message' : 'user-message'"
           >
@@ -29,8 +49,20 @@
               <span class="message-role">
                 {{ message.role === 'assistant' ? 'Assistant' : 'You' }}
               </span>
+
+              <span v-if="message.state === 'error'" class="message-state">Error</span>
             </div>
+
             <p>{{ message.content }}</p>
+
+            <button
+              v-if="message.state === 'error'"
+              type="button"
+              class="retry-button"
+              @click="retryMessage(message.id)"
+            >
+              Retry
+            </button>
           </li>
         </ul>
       </div>
@@ -60,20 +92,26 @@
     import { computed, ref } from 'vue';
 
     type MessageRole = 'user' | 'assistant';
+    type MessageState = 'success' | 'error';
 
     type Message = {
         id: string;
         role: MessageRole;
         content: string;
+        state?: MessageState;
+        replyToMessageId?: string;
     };
 
     const prompt = ref('');
     const isLoading = ref(false);
+    const selectedModel = ref('model-v1');
+    const errorSimulationEnabled = ref(false);
     const messages = ref<Message[]>([
         {
             id: 'assistant-welcome',
             role: 'assistant',
             content: 'Hello! I am a general AI assistant. Ask me anything and I will reply with a sample response.',
+            state: 'success',
         },
     ]);
 
@@ -103,13 +141,69 @@
         return `I understand your query about "${userPrompt}". Here's a general response: This is a mock assistant reply.`;
     };
 
+    const clearConversation = () => {
+        messages.value = [
+            {
+                id: 'assistant-welcome',
+                role: 'assistant',
+                content: 'Hello! I am a general AI assistant. Ask me anything and I will reply with a sample response.',
+                state: 'success',
+            },
+        ];
+        prompt.value = '';
+    };
+
+    const retryMessage = async (messageId: string) => {
+        const errorMessageIndex = messages.value.findIndex(message => message.id === messageId);
+
+        if (errorMessageIndex === -1) return;
+
+        const errorMessage = messages.value[errorMessageIndex];
+        const userMessageId = errorMessage.replyToMessageId;
+
+        if (!userMessageId) return;
+
+        const userMessage = messages.value.find(message => message.id === userMessageId);
+
+        if (!userMessage || userMessage.role !== 'user') return;
+
+        const userContent = userMessage.content;
+
+        messages.value.splice(errorMessageIndex, 1);
+
+        isLoading.value = true;
+
+        const loadingMessageId = `assistant-loading-${Date.now()}`;
+
+        messages.value.push({
+            id: loadingMessageId,
+            role: 'assistant',
+            content: 'Processing your request...',
+            state: 'success',
+            replyToMessageId: userMessageId,
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        const responseContent = getMockResponse(userContent);
+        const loadingIndex = messages.value.findIndex(message => message.id === loadingMessageId);
+
+        if (loadingIndex !== -1) {
+            messages.value[loadingIndex].content = responseContent;
+        }
+
+        isLoading.value = false;
+    };
+
     const sendMessage = async () => {
         const content = prompt.value.trim();
 
         if (!content) return;
 
+        const userMessageId = `user-${Date.now()}`;
+
         messages.value.push({
-            id: `user-${Date.now()}`,
+            id: userMessageId,
             role: 'user',
             content,
         });
@@ -119,13 +213,25 @@
 
         await new Promise((resolve) => setTimeout(resolve, 600));
 
-        const responseContent = getMockResponse(content);
+        if (errorSimulationEnabled.value) {
+            messages.value.push({
+                id: `assistant-${Date.now()}`,
+                role: 'assistant',
+                content: `Error: The assistant encountered an issue processing your request. (Model: ${selectedModel.value})`,
+                state: 'error',
+                replyToMessageId: userMessageId,
+            });
+        } else {
+            const responseContent = getMockResponse(content);
 
-        messages.value.push({
-            id: `assistant-${Date.now()}`,
-            role: 'assistant',
-            content: responseContent,
-        });
+            messages.value.push({
+                id: `assistant-${Date.now()}`,
+                role: 'assistant',
+                content: responseContent,
+                state: 'success',
+                replyToMessageId: userMessageId,
+            });
+        }
 
         isLoading.value = false;
     };
