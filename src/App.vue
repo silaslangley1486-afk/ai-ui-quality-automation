@@ -16,13 +16,14 @@
         <p class="section-note">User messages and assistant replies appear here.</p>
       </div>
 
-      <div role="log" aria-live="polite">
-        <ul class="conversation-list">
+      <div role="log" aria-live="polite" aria-label="Conversation history">
+        <ul class="conversation-list" data-testid="message-list">
           <li
             v-for="message in messages"
             :key="message.id"
             :class="['message', message.role]"
             :aria-label="message.role === 'assistant' ? 'Assistant message' : 'User message'"
+            :data-testid="message.role === 'assistant' ? 'assistant-message' : 'user-message'"
           >
             <div class="message-meta">
               <span class="message-role">
