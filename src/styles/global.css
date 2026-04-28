@@ -18,10 +18,11 @@ html, body, #app {
 
 body {
   padding: 24px;
+  background: #f8fafc;
 }
 
 .app-shell {
-  max-width: 900px;
+  max-width: 920px;
   margin: 0 auto;
   display: grid;
   gap: 28px;
@@ -30,8 +31,9 @@ body {
 .hero {
   padding: 30px;
   border-radius: 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
+  background: #ffffff;
   border: 1px solid #e5e7eb;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
 }
 
 .eyebrow {
@@ -50,4 +52,124 @@ h1 {
 .description {
   max-width: 700px;
   color: #4b5563;
+}
+
+.conversation {
+  display: grid;
+  gap: 16px;
+}
+
+.section-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.section-note {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.conversation-list {
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  padding: 0;
+  margin: 0;
+}
+
+.message {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.message.assistant {
+  border-color: #c7d2fe;
+  background: #f8fafc;
+}
+
+.message.user {
+  border-color: #d1fae5;
+  background: #ffffff;
+}
+
+.message-meta {
+  margin-bottom: 10px;
+}
+
+.message-role {
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.message p {
+  margin: 0;
+  color: #111827;
+  line-height: 1.75;
+}
+
+.composer {
+  display: grid;
+  gap: 12px;
+}
+
+.composer-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font: inherit;
+  color: #111827;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.14);
+}
+
+.composer-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.send-button {
+  padding: 12px 22px;
+  border-radius: 14px;
+  border: none;
+  background: #4338ca;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.send-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 16px;
+  }
+
+  .hero {
+    padding: 24px;
+  }
+
+  .send-button {
+    width: 100%;
+  }
 }
