@@ -14,7 +14,7 @@
       <div class="section-heading">
         <h2 id="conversation-title">Conversation</h2>
         <p class="section-note">User messages and assistant replies appear here.</p>
-      </div>22
+      </div>
 
       <div role="log" aria-live="polite">
         <ul class="conversation-list">
@@ -80,6 +80,28 @@
         () => isLoading.value || prompt.value.trim().length === 0,
     );
 
+    const getMockResponse = (userPrompt: string): string => {
+        const lowerCasePrompt = userPrompt.toLowerCase();
+
+        if (lowerCasePrompt.includes('accessibility')) {
+            return 'Regarding accessibility: Ensure your UI meets WCAG guidelines, including keyboard navigation and screen reader support.';
+        }
+
+        if (lowerCasePrompt.includes('test')) {
+            return 'For testing: Use Playwright for end-to-end tests and axe-core for accessibility checks.';
+        }
+
+        if (lowerCasePrompt.includes('hello') || lowerCasePrompt.includes('hi')) {
+            return 'Hello! How can I assist you today?';
+        }
+
+        if (lowerCasePrompt.includes('error')) {
+            return 'If you\'re encountering an error, check the console for details and ensure all dependencies are installed.';
+        }
+
+        return `I understand your query about "${userPrompt}". Here's a general response: This is a mock assistant reply.`;
+    };
+
     const sendMessage = async () => {
         const content = prompt.value.trim();
 
@@ -96,10 +118,12 @@
 
         await new Promise((resolve) => setTimeout(resolve, 600));
 
+        const responseContent = getMockResponse(content);
+
         messages.value.push({
             id: `assistant-${Date.now()}`,
             role: 'assistant',
-            content: `Mock response: I received your prompt and I am generating a sample assistant reply for "${content}".`,
+            content: responseContent,
         });
 
         isLoading.value = false;
