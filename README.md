@@ -25,6 +25,21 @@ This portfolio project was created to demonstrate practical skills in:
 - axe-core
 - GitHub Actions
 
+## Getting Started
+
+Install dependencies and start the development server:
+
+```bash
+npm install
+npm run dev
+```
+
+Build the app for production:
+
+```bash
+npm run build
+```
+
 ## Project Scope
 
 The application uses deterministic mocked responses and does not connect to a real AI model or external API. The primary purpose of the repository is to showcase testing strategy, automation quality, and accessibility coverage in a realistic AI UI scenario.
