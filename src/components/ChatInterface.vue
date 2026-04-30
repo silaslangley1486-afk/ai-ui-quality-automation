@@ -19,11 +19,6 @@
 						</select>
 					</div>
 
-					<label class="error-toggle">
-						<input type="checkbox" v-model="errorSimulationEnabled" />
-						Enable error simulation
-					</label>
-
 					<button class="clear-button" type="button" @click="clearConversation">
 						Clear conversation
 					</button>
@@ -32,21 +27,26 @@
 						type="button"
 						class="settings-button"
 						@click="settingsOpen = !settingsOpen"
-						aria-label="Toggle settings"
+						aria-label="Open settings"
 						:aria-expanded="settingsOpen"
+						aria-controls="settings-panel"
+						ref="settingsButton"
 					>
 						⚙️
 					</button>
 				</div>
 			</div>
 
-			<div v-if="settingsOpen" class="settings-panel" role="region" aria-labelledby="settings-heading">
-				<h3 id="settings-heading">Settings</h3>
-				<p class="settings-note">Additional preferences can be configured here.</p>
-				<button type="button" class="close-settings" @click="settingsOpen = false">
-					Close settings
-				</button>
-			</div>
+			<SettingsModal
+				v-if="settingsOpen"
+				id="settings-panel"
+				v-model:themeMode="themeMode"
+				v-model:reducedMotionEnabled="reducedMotionEnabled"
+				v-model:responseDelay="responseDelay"
+				v-model:errorSimulationEnabled="errorSimulationEnabled"
+				@close="closeSettings"
+				@reset="resetApplicationState"
+			/>
 
 			<div role="log" aria-live="polite" aria-label="Conversation history">
 				<ul class="conversation-list" data-testid="message-list">
@@ -57,24 +57,35 @@
 						:aria-label="message.role === 'assistant' ? 'Assistant message' : 'User message'"
 						:data-testid="message.role === 'assistant' ? 'assistant-message' : 'user-message'"
 					>
-						<div class="message-meta">
-							<span class="message-role">
-								{{ message.role === 'assistant' ? 'Assistant' : 'You' }}
-							</span>
+						<div class="message-content">
+							<template v-if="message.role === 'assistant' && message.state === 'loading'">
+								<div
+									role="status"
+									aria-live="polite"
+									class="assistant-loading"
+									data-testid="loading-indicator"
+								>
+									<span v-if="!reducedMotionEnabled" class="spinner" aria-hidden="true"></span>
+									<span>Processing your request…</span>
+								</div>
+							</template>
 
-							<span v-if="message.state === 'error'" class="message-state">Error</span>
+							<template v-else-if="message.role === 'assistant' && message.state === 'error'">
+								<p>{{ message.content }}</p>
+
+								<button
+									type="button"
+									class="retry-button"
+									@click="retryMessage(message.id)"
+								>
+									Retry
+								</button>
+							</template>
+
+							<template v-else>
+								<p>{{ message.content }}</p>
+							</template>
 						</div>
-
-						<p>{{ message.content }}</p>
-
-						<button
-							v-if="message.state === 'error'"
-							type="button"
-							class="retry-button"
-							@click="retryMessage(message.id)"
-						>
-							Retry
-						</button>
 					</li>
 				</ul>
 			</div>
@@ -101,10 +112,12 @@
 </template>
 
 <script lang="ts" setup>
-	import { ref } from 'vue';
+	import { ref, watch } from 'vue';
 	import { useChat } from '../composables/useChat';
+	import SettingsModal from './SettingsModal.vue';
 
 	const settingsOpen = ref(false);
+	const settingsButton = ref<HTMLButtonElement | null>(null);
 
 	const {
 		prompt,
@@ -113,10 +126,24 @@
 		isSendDisabled,
 		selectedModel,
 		errorSimulationEnabled,
+		themeMode,
+		reducedMotionEnabled,
+		responseDelay,
 		retryMessage,
 		handleSubmit,
 		clearConversation,
+		resetApplicationState,
 	} = useChat();
+
+	const closeSettings = () => {
+		settingsOpen.value = false;
+	};
+
+	watch(settingsOpen, (open) => {
+		if (!open) {
+			settingsButton.value?.focus();
+		}
+	});
 </script>
 
 <style scoped>
@@ -168,96 +195,64 @@
 	.control-group label {
 		font-size: 0.9rem;
 		font-weight: 600;
-		color: #111827;
+		color: var(--text);
 	}
 
 	.model-select {
 		padding: 8px 12px;
 		border-radius: 8px;
-		border: 1px solid #d1d5db;
-		background: #ffffff;
-		color: #111827;
+		border: 1px solid var(--input-border);
+		background: var(--input);
+		color: var(--text);
 		font-size: 0.9rem;
-		cursor: pointer;
-	}
-
-	.error-toggle {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 0.9rem;
-		font-weight: 600;
-		color: #111827;
-		cursor: pointer;
-	}
-
-	.error-toggle input {
 		cursor: pointer;
 	}
 
 	.clear-button {
 		padding: 8px 14px;
 		border-radius: 8px;
-		border: 1px solid #d1d5db;
-		background: #f3f4f6;
-		color: #111827;
+		border: 1px solid var(--border);
+		background: var(--control-bg);
+		color: var(--text);
 		font-size: 0.9rem;
 		font-weight: 600;
 		cursor: pointer;
 	}
 
 	.clear-button:hover {
-		background: #e5e7eb;
+		background: var(--control-hover);
 	}
 
 	.settings-button {
 		padding: 8px;
 		border-radius: 8px;
-		border: 1px solid #d1d5db;
-		background: #f3f4f6;
-		color: #111827;
+		border: 1px solid var(--border);
+		background: var(--control-bg);
+		color: var(--text);
 		font-size: 1rem;
 		cursor: pointer;
 	}
 
 	.settings-button:hover {
-		background: #e5e7eb;
+		background: var(--control-hover);
 	}
 
-	.settings-panel {
-		padding: 16px;
-		border-radius: 12px;
-		background: #f8fafc;
-		border: 1px solid #e5e7eb;
-		display: grid;
-		gap: 12px;
+	.clear-button:hover,
+	.settings-button:hover {
+		background: var(--control-hover);
 	}
 
-	.settings-panel h3 {
-		margin: 0;
-		font-size: 1.1rem;
-	}
-
-	.settings-note {
-		color: #6b7280;
-		font-size: 0.9rem;
-		margin: 0;
-	}
-
-	.close-settings {
-		padding: 8px 14px;
-		border-radius: 8px;
-		border: 1px solid #d1d5db;
-		background: #ffffff;
-		color: #111827;
-		font-size: 0.9rem;
-		font-weight: 600;
-		cursor: pointer;
-		align-self: start;
-	}
-
-	.close-settings:hover {
-		background: #f3f4f6;
+	.model-select:focus-visible,
+	.field-row select:focus-visible,
+	.clear-button:focus-visible,
+	.settings-button:focus-visible,
+	.close-settings:focus-visible,
+	.reset-state-button:focus-visible,
+	.retry-button:focus-visible,
+	.send-button:focus-visible,
+	textarea:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
 	}
 
 	.conversation-list {
@@ -268,18 +263,35 @@
 		margin: 0;
 	}
 
+	.assistant-loading {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		color: var(--muted);
+		font-size: 0.95rem;
+	}
+
+	.spinner {
+		width: 14px;
+		height: 14px;
+		border: 2px solid var(--border);
+		border-top-color: var(--accent);
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+
 	.message {
 		padding: 18px;
 		border-radius: 20px;
-		border: 1px solid #e5e7eb;
-		background: #ffffff;
+		border: 1px solid var(--border);
+		background: var(--surface);
 		display: grid;
 		gap: 12px;
 	}
 
 	.message.assistant {
 		border-color: #c7d2fe;
-		background: #f8fafc;
+		background: #eef2ff;
 	}
 
 	.message.assistant.error {
@@ -289,7 +301,7 @@
 
 	.message.user {
 		border-color: #d1fae5;
-		background: #ffffff;
+		background: var(--surface);
 	}
 
 	.message-meta {
@@ -319,7 +331,7 @@
 	}
 
 	.retry-button {
-		align-self: start;
+		/* align-self: start;
 		padding: 8px 14px;
 		border-radius: 8px;
 		border: none;
@@ -327,11 +339,20 @@
 		color: white;
 		font-size: 0.85rem;
 		font-weight: 600;
+		cursor: pointer; */
+
+		margin-top: 8px;
+		padding: 7px 12px;
+		border-radius: 8px;
+		border: 1px solid var(--border);
+		background: var(--control-bg);
+		color: var(--text);
+		font-weight: 600;
 		cursor: pointer;
 	}
 
 	.retry-button:hover {
-		background: #ef4444;
+		background: var(--control-hover);
 	}
 
 	.composer {
@@ -371,6 +392,17 @@
 		opacity: 0.55;
 		cursor: not-allowed;
 	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	html[data-reduced-motion="true"] .spinner {
+		animation: none;
+	}
+
 
 	@media (max-width: 640px) {
 		.chat-toolbar {

@@ -1,26 +1,46 @@
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Message, WELCOME_MESSAGE } from '../types/chat';
 import { getMockResponse } from '../services/mockAssistant';
+import { DEFAULT_MODEL, DEFAULT_RESPONSE_DELAY } from '../constants';
+import { ThemeMode } from '../types/ui';
 
 export const useChat = () => {
 	const prompt = ref('');
 	const isLoading = ref(false);
-	const selectedModel = ref('model-v1');
+	const selectedModel = ref(DEFAULT_MODEL);
 	const errorSimulationEnabled = ref(false);
+	const themeMode = ref<ThemeMode>('light');
+	const reducedMotionEnabled = ref(false);
+	const responseDelay = ref(DEFAULT_RESPONSE_DELAY);
 	const messages = ref<Message[]>([WELCOME_MESSAGE]);
 
 	const isSendDisabled = computed(
 		() => isLoading.value || prompt.value.trim().length === 0,
 	);
 
+	const updateDocumentAttributes = () => {
+		if (typeof document === 'undefined') return;
+
+		const html = document.documentElement;
+
+		html.dataset.theme = themeMode.value;
+		html.dataset.reducedMotion = reducedMotionEnabled.value ? 'true' : 'false';
+	};
+
+	watch([themeMode, reducedMotionEnabled], updateDocumentAttributes, {
+		immediate: true,
+	});
+
 	const clearConversation = () => {
 		messages.value = [WELCOME_MESSAGE];
 		prompt.value = '';
 	};
 
+	const delayResponse = () => new Promise((resolve) => setTimeout(resolve, responseDelay.value));
+
 	const retryMessage = async (messageId: string) => {
 		const errorMessageIndex = messages.value.findIndex(
-			(message) => message.id === messageId
+			(message) => message.id === messageId,
 		);
 
 		if (errorMessageIndex === -1) return;
@@ -31,7 +51,7 @@ export const useChat = () => {
 		if (!userMessageId) return;
 
 		const userMessage = messages.value.find(
-			(message) => message.id === userMessageId
+			(message) => message.id === userMessageId,
 		);
 
 		if (!userMessage || userMessage.role !== 'user') return;
@@ -47,20 +67,21 @@ export const useChat = () => {
 			id: loadingMessageId,
 			role: 'assistant',
 			content: 'Processing your request...',
-			state: 'success',
+			state: 'loading',
 			replyToMessageId: userMessageId,
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 600));
+		await delayResponse();
 
 		const responseContent = getMockResponse(userContent);
 
 		const loadingIndex = messages.value.findIndex(
-			(message) => message.id === loadingMessageId
+			(message) => message.id === loadingMessageId,
 		);
 
 		if (loadingIndex !== -1) {
 			messages.value[loadingIndex].content = responseContent;
+			messages.value[loadingIndex].state = 'success';
 		}
 
 		isLoading.value = false;
@@ -82,26 +103,43 @@ export const useChat = () => {
 		prompt.value = '';
 		isLoading.value = true;
 
-		await new Promise((resolve) => setTimeout(resolve, 600));
+		const loadingMessageId = `assistant-loading-${Date.now()}`;
+
+		messages.value.push({
+			id: loadingMessageId,
+			role: 'assistant',
+			content: 'Processing your request...',
+			state: 'loading',
+			replyToMessageId: userMessageId,
+		});
+
+		await delayResponse();
+
+		const loadingIndex = messages.value.findIndex(
+			(message) => message.id === loadingMessageId,
+		);
+
+		if (loadingIndex === -1) {
+			isLoading.value = false;
+			return;
+		}
 
 		if (errorSimulationEnabled.value) {
-			messages.value.push({
-				id: `assistant-${Date.now()}`,
+			messages.value[loadingIndex] = {
+				id: `assistant-error-${Date.now()}`,
 				role: 'assistant',
 				content: `Error: The assistant encountered an issue processing your request. (Model: ${selectedModel.value})`,
 				state: 'error',
 				replyToMessageId: userMessageId,
-			});
+			};
 		} else {
-			const responseContent = getMockResponse(content);
-
-			messages.value.push({
+			messages.value[loadingIndex] = {
 				id: `assistant-${Date.now()}`,
 				role: 'assistant',
-				content: responseContent,
+				content: getMockResponse(content),
 				state: 'success',
 				replyToMessageId: userMessageId,
-			});
+			};
 		}
 
 		isLoading.value = false;
@@ -111,16 +149,29 @@ export const useChat = () => {
 		await sendMessage();
 	};
 
+	const resetApplicationState = () => {
+		selectedModel.value = DEFAULT_MODEL;
+		errorSimulationEnabled.value = false;
+		themeMode.value = 'light';
+		reducedMotionEnabled.value = false;
+		responseDelay.value = DEFAULT_RESPONSE_DELAY;
+		clearConversation();
+	};
+
 	return {
 		prompt,
 		isLoading,
 		selectedModel,
 		errorSimulationEnabled,
+		themeMode,
+		reducedMotionEnabled,
+		responseDelay,
 		messages,
 		isSendDisabled,
 		clearConversation,
 		retryMessage,
 		sendMessage,
 		handleSubmit,
+		resetApplicationState,
 	};
 };

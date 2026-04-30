@@ -1,5 +1,5 @@
 export type MessageRole = 'user' | 'assistant';
-export type MessageState = 'success' | 'error';
+export type MessageState = 'success' | 'error' | 'loading';
 
 export type Message = {
 	id: string;
