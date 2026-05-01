@@ -80,10 +80,18 @@
 			<section class="maintenance-section" aria-labelledby="maintenance-heading">
 				<div>
 					<h3 id="maintenance-heading">Maintenance</h3>
-					<p>Reset the conversation, model, and settings to their defaults.</p>
+
+					<p id="reset-description">
+						Reset the conversation, selected model, appearance settings, accessibility settings, and testing controls to their defaults.
+					</p>
 				</div>
 
-				<button type="button" class="reset-state-button" @click="reset">
+				<button
+					type="button"
+					class="reset-state-button"
+					aria-describedby="reset-description"
+					@click="reset"
+				>
 					Reset application state
 				</button>
 			</section>
@@ -109,6 +117,7 @@
 		responseDelay: { type: Number, required: true },
 		errorSimulationEnabled: { type: Boolean, required: true },
 	});
+
 	const emit = defineEmits([
 		'close',
 		'reset',

@@ -12,7 +12,7 @@
 			</div>
 		</header>
 
-		<main id="main-content" class="app-shell">
+		<main id="main-content" class="app-shell" tabindex="-1">
 			<ChatInterface />
 		</main>
 	</div>
@@ -43,6 +43,10 @@
 
 	.skip-link:focus {
 		top: 6px;
+	}
+
+	.app-shell:focus {
+		outline: none;
 	}
 
 	.page-header {
@@ -85,5 +89,6 @@
 		flex: 1;
 		display: grid;
 		gap: 28px;
+		width: 100%;
 	}
 </style>
