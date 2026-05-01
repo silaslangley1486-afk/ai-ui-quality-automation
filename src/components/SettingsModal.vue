@@ -8,6 +8,7 @@
 		tabindex="-1"
 		ref="dialogRef"
 		@keydown.esc.prevent="close"
+		@keydown.tab="trapFocus"
 	>
 		<header class="settings-header">
 			<div class="settings-header-text">
@@ -16,10 +17,6 @@
 					Configure appearance, accessibility, and testing controls.
 				</p>
 			</div>
-
-			<button type="button" class="header-close-button" @click="close" aria-label="Close settings">
-				×
-			</button>
 		</header>
 
 		<div class="settings-body">
@@ -104,14 +101,14 @@
 	import { onMounted, ref } from 'vue';
 	import type { PropType } from 'vue';
 	import { ThemeMode } from '../types/ui';
+	import { useFocusTrap } from '../composables/useFocusTrap';
 
-	const props = defineProps({
+	defineProps({
 		themeMode: { type: String as PropType<ThemeMode>, required: true },
 		reducedMotionEnabled: { type: Boolean, required: true },
 		responseDelay: { type: Number, required: true },
 		errorSimulationEnabled: { type: Boolean, required: true },
 	});
-
 	const emit = defineEmits([
 		'close',
 		'reset',
@@ -122,9 +119,10 @@
 	]);
 
 	const dialogRef = ref<HTMLElement | null>(null);
+	const { focusFirstElement, trapFocus } = useFocusTrap(dialogRef);
 
 	onMounted(() => {
-		dialogRef.value?.focus();
+		focusFirstElement();
 	});
 
 	const close = () => emit('close');
@@ -151,7 +149,7 @@
 	.settings-modal {
 		display: grid;
 		width: min(100%, 640px);
-        max-height: 90vh;
+		max-height: 90vh;
 		border-radius: 18px;
 		background: var(--surface);
 		border: 1px solid var(--border);
@@ -194,34 +192,11 @@
 		line-height: 1.5;
 	}
 
-	.header-close-button {
-		position: absolute;
-		top: 14px;
-		right: 14px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		height: 36px;
-		border-radius: 999px;
-		border: 1px solid transparent;
-		background: transparent;
-		color: var(--muted);
-		font-size: 1.5rem;
-		line-height: 1;
-		cursor: pointer;
-	}
-
-	.header-close-button:hover {
-		background: var(--control-hover);
-		color: var(--text);
-	}
-
 	.settings-body {
 		display: grid;
 		gap: 18px;
 		padding: 22px;
-        overflow-y: auto;
+		overflow-y: auto;
 	}
 
 	.settings-fieldset {

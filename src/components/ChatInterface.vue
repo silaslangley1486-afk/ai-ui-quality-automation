@@ -32,21 +32,26 @@
 						aria-controls="settings-panel"
 						ref="settingsButton"
 					>
-						⚙️
+						Settings
 					</button>
 				</div>
 			</div>
 
-			<SettingsModal
+			<div
 				v-if="settingsOpen"
-				id="settings-panel"
-				v-model:themeMode="themeMode"
-				v-model:reducedMotionEnabled="reducedMotionEnabled"
-				v-model:responseDelay="responseDelay"
-				v-model:errorSimulationEnabled="errorSimulationEnabled"
-				@close="closeSettings"
-				@reset="resetApplicationState"
-			/>
+				class="modal-overlay"
+				@click.self="closeSettings"
+			>
+				<SettingsModal
+					id="settings-panel"
+					v-model:themeMode="themeMode"
+					v-model:reducedMotionEnabled="reducedMotionEnabled"
+					v-model:responseDelay="responseDelay"
+					v-model:errorSimulationEnabled="errorSimulationEnabled"
+					@close="closeSettings"
+					@reset="resetApplicationState"
+				/>
+			</div>
 
 			<div role="log" aria-live="polite" aria-label="Conversation history">
 				<ul class="conversation-list" data-testid="message-list">
@@ -224,17 +229,33 @@
 	}
 
 	.settings-button {
-		padding: 8px;
+		padding: 8px 14px;
 		border-radius: 8px;
 		border: 1px solid var(--border);
 		background: var(--control-bg);
 		color: var(--text);
-		font-size: 1rem;
+		font-size: 0.9rem;
+		font-weight: 600;
 		cursor: pointer;
 	}
 
 	.settings-button:hover {
 		background: var(--control-hover);
+	}
+
+	.settings-button:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.modal-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		display: grid;
+		place-items: center;
+		padding: 24px;
+		background: rgba(15, 23, 42, 0.55);
 	}
 
 	.clear-button:hover,
