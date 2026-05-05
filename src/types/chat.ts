@@ -1,5 +1,11 @@
 export type MessageRole = 'user' | 'assistant';
-export type MessageState = 'success' | 'error' | 'loading';
+
+export type MessageState = 
+	| 'success'
+	| 'error'
+	| 'loading'
+	| 'fallback'
+	| 'unsupported';
 
 export type Message = {
 	id: string;
@@ -7,11 +13,4 @@ export type Message = {
 	content: string;
 	state?: MessageState;
 	replyToMessageId?: string;
-};
-
-export const WELCOME_MESSAGE: Message = {
-	id: 'assistant-welcome',
-	role: 'assistant',
-	content: 'Hello! I am a general AI assistant. Ask me anything and I will reply with a sample response.',
-	state: 'success',
 };

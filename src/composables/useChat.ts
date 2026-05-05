@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue';
-import { Message, WELCOME_MESSAGE } from '../types/chat';
+import { Message } from '../types/chat';
+import { WELCOME_MESSAGE } from '../constants/chat';
 import { getMockResponse } from '../services/mockAssistant';
 import { DEFAULT_MODEL, DEFAULT_RESPONSE_DELAY } from '../constants';
 import { ThemeMode } from '../types/ui';
@@ -73,15 +74,15 @@ export const useChat = () => {
 
 		await delayResponse();
 
-		const responseContent = getMockResponse(userContent);
-
 		const loadingIndex = messages.value.findIndex(
 			(message) => message.id === loadingMessageId,
 		);
 
 		if (loadingIndex !== -1) {
-			messages.value[loadingIndex].content = responseContent;
-			messages.value[loadingIndex].state = 'success';
+			const mockResponse = getMockResponse(userContent);
+
+			messages.value[loadingIndex].content = mockResponse.content;
+			messages.value[loadingIndex].state = mockResponse.state;
 		}
 
 		isLoading.value = false;
@@ -90,7 +91,7 @@ export const useChat = () => {
 	const sendMessage = async () => {
 		const content = prompt.value.trim();
 
-		if (!content) return;
+		if (!content || isLoading.value) return;
 
 		const userMessageId = `user-${Date.now()}`;
 
@@ -121,6 +122,7 @@ export const useChat = () => {
 
 		if (loadingIndex === -1) {
 			isLoading.value = false;
+
 			return;
 		}
 
@@ -133,11 +135,13 @@ export const useChat = () => {
 				replyToMessageId: userMessageId,
 			};
 		} else {
+			const mockResponse = getMockResponse(content);
+
 			messages.value[loadingIndex] = {
 				id: `assistant-${Date.now()}`,
 				role: 'assistant',
-				content: getMockResponse(content),
-				state: 'success',
+				content: mockResponse.content,
+				state: mockResponse.state,
 				replyToMessageId: userMessageId,
 			};
 		}

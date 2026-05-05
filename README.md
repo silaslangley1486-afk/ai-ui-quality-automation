@@ -61,3 +61,9 @@ This project follows a deliberate locator strategy aligned with accessibility an
 **Principle**
 
 > Prefer user-centric selectors. Use test IDs only when necessary to verify UI state or dynamic content that lacks stable semantic meaning.
+
+## Mock Assistant
+
+The mock assistant supports deterministic test scenarios via [test:<scenario>] prompts (e.g., [test:empty], [test:long], [test:unsupported]). This allows Playwright tests to validate AI UI behavior without relying on nondeterministic model output.
+
+Long responses are intentionally included to test scrolling behavior, layout resilience, and readability of extended AI-generated content.
