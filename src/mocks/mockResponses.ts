@@ -16,3 +16,14 @@ export const LONG_RESPONSE = `
 
     Finally, always test your application under real-world conditions, including slower networks, reduced motion settings, and assistive technologies. Accessibility is not just about compliance. It is about creating a usable experience for everyone.
 `;
+
+export const MARKDOWN_RESPONSE = `
+    Here are steps:
+
+    - Step 1
+    - Step 2
+
+    \`\`\`ts
+        console.log('test');
+    \`\`\`
+`;

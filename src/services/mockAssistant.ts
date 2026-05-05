@@ -1,7 +1,7 @@
-import { LONG_RESPONSE } from '../mocks/mockResponses';
-import { MockResponse } from '../types/mocks';
+import type { MockModel, MockResponse } from '../types/mocks';
+import { LONG_RESPONSE, MARKDOWN_RESPONSE } from '../mocks/mockResponses';
 
-type ScenarioKey = 'empty' | 'long' | 'unsafe' | 'unsupported' | 'markdown';
+type ScenarioKey = 'empty' | 'long' | 'markdown' | 'unsupported' | 'unsafe';
 
 const testScenarios: Record<ScenarioKey, () => MockResponse> = {
 	empty: () => ({
@@ -14,10 +14,9 @@ const testScenarios: Record<ScenarioKey, () => MockResponse> = {
 		state: 'success',
 	}),
 
-	unsafe: () => ({
-		content:
-			'I\'m not able to assist with that request. If you\'d like, I can help with a safer or more appropriate alternative.',
-		state: 'unsupported',
+	markdown: () => ({
+		content: MARKDOWN_RESPONSE,
+		state: 'success',
 	}),
 
 	unsupported: () => ({
@@ -25,18 +24,10 @@ const testScenarios: Record<ScenarioKey, () => MockResponse> = {
 		state: 'unsupported',
 	}),
 
-	markdown: () => ({
-		content: `
-			Here are steps:
-
-			- Step 1
-			- Step 2
-
-			\`\`\`ts
-				console.log('test');
-			\`\`\`
-		`,
-		state: 'success',
+	unsafe: () => ({
+		content:
+			'I’m not able to assist with that request. I can help with a safer or more appropriate alternative.',
+		state: 'unsupported',
 	}),
 };
 
@@ -44,57 +35,99 @@ const isScenarioKey = (scenario: string): scenario is ScenarioKey => {
 	return scenario in testScenarios;
 };
 
+const getModelPrefix = (selectedModel: MockModel) => {
+	switch (selectedModel) {
+		case 'model-v1':
+			return '[Model V1]';
 
-export const getMockResponse = (userPrompt: string): MockResponse => {
+		case 'model-v2':
+			return '[Model V2 - concise]';
+
+		case 'model-v3':
+			return '[Model V3 - detailed]';
+	}
+};
+
+const withModelContext = (
+	response: MockResponse,
+	selectedModel: MockModel,
+): MockResponse => ({
+	...response,
+	content: `${getModelPrefix(selectedModel)} ${response.content}`,
+});
+
+export const getMockResponse = (
+	userPrompt: string,
+	selectedModel: MockModel,
+): MockResponse => {
 	const testMatch = userPrompt.match(/^\[test:(.+?)\]/);
 
 	if (testMatch) {
 		const scenario = testMatch[1];
 
 		if (isScenarioKey(scenario)) {
-			return testScenarios[scenario]();
+			return withModelContext(testScenarios[scenario](), selectedModel);
 		}
 
-		return {
-			content: 'Unknown test scenario.',
-			state: 'fallback',
-		};
+		return withModelContext(
+			{
+				content: 'Unknown test scenario.',
+				state: 'fallback',
+			},
+			selectedModel,
+		);
 	}
 
 	const lowerCasePrompt = userPrompt.toLowerCase();
 
 	if (lowerCasePrompt.includes('accessibility')) {
-		return {
-			content:
-				'Regarding accessibility: Ensure your UI meets WCAG guidelines, including keyboard navigation and screen reader support.',
-			state: 'success',
-		};
+		return withModelContext(
+			{
+				content:
+					'Regarding accessibility: Ensure your UI meets WCAG guidelines, including keyboard navigation and screen reader support.',
+				state: 'success',
+			},
+			selectedModel,
+		);
 	}
 
 	if (lowerCasePrompt.includes('test')) {
-		return {
-			content:
-				'For testing: Use Playwright for end-to-end tests and axe-core for accessibility checks.',
-			state: 'success',
-		};
+		return withModelContext(
+			{
+				content:
+					'For testing: Use Playwright for end-to-end tests and axe-core for accessibility checks.',
+				state: 'success',
+			},
+			selectedModel,
+		);
 	}
 
 	if (lowerCasePrompt.includes('hello') || lowerCasePrompt.includes('hi')) {
-		return {
-			content: 'Hello! How can I assist you today?',
-			state: 'success',
-		};
+		return withModelContext(
+			{
+				content: 'Hello! How can I assist you today?',
+				state: 'success',
+			},
+			selectedModel,
+		);
 	}
 
 	if (lowerCasePrompt.includes('error')) {
-		return {
-			content: 'If you\'re encountering an error, check the console for details and ensure all dependencies are installed.',
-			state: 'success',
-		};
+		return withModelContext(
+			{
+				content:
+					"If you're encountering an error, check the console for details and ensure all dependencies are installed.",
+				state: 'success',
+			},
+			selectedModel,
+		);
 	}
 
-	return {
-		content: `I understand your query about "${userPrompt}". Here's a general response.`,
-		state: 'success',
-	};
+	return withModelContext(
+		{
+			content: `I understand your query about "${userPrompt}". Here's a general response: This is a mock assistant reply.`,
+			state: 'success',
+		},
+		selectedModel,
+	);
 };

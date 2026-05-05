@@ -4,11 +4,12 @@ import { WELCOME_MESSAGE } from '../constants/chat';
 import { getMockResponse } from '../services/mockAssistant';
 import { DEFAULT_MODEL, DEFAULT_RESPONSE_DELAY } from '../constants';
 import { ThemeMode } from '../types/ui';
+import type { MockModel } from '../types/mocks';
 
 export const useChat = () => {
 	const prompt = ref('');
 	const isLoading = ref(false);
-	const selectedModel = ref(DEFAULT_MODEL);
+	const selectedModel = ref<MockModel>(DEFAULT_MODEL);
 	const errorSimulationEnabled = ref(false);
 	const themeMode = ref<ThemeMode>('light');
 	const reducedMotionEnabled = ref(false);
@@ -79,7 +80,7 @@ export const useChat = () => {
 		);
 
 		if (loadingIndex !== -1) {
-			const mockResponse = getMockResponse(userContent);
+			const mockResponse = getMockResponse(userContent, selectedModel.value);
 
 			messages.value[loadingIndex].content = mockResponse.content;
 			messages.value[loadingIndex].state = mockResponse.state;
@@ -135,7 +136,7 @@ export const useChat = () => {
 				replyToMessageId: userMessageId,
 			};
 		} else {
-			const mockResponse = getMockResponse(content);
+			const mockResponse = getMockResponse(content, selectedModel.value);
 
 			messages.value[loadingIndex] = {
 				id: `assistant-${Date.now()}`,
