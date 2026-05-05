@@ -176,8 +176,8 @@
 		settingsOpen.value = false;
 	};
 
-	const submitPrompt = () => {
-		handleSubmit();
+	const submitPrompt = async () => {
+		await handleSubmit();
 		announce('Prompt sent.');
 	};
 
