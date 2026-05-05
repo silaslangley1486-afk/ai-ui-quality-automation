@@ -77,7 +77,9 @@
 								</template>
 
 								<template v-else-if="message.role === 'assistant' && message.state === 'error'">
-									<p>{{ message.content }}</p>
+									<div class="error-message" role="alert">
+										<p>{{ message.content }}</p>
+									</div>
 
 									<button
 										type="button"
