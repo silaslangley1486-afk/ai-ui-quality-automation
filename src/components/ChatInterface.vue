@@ -105,7 +105,10 @@
 				<label class="composer-label" for="prompt-input">Send a prompt</label>
 
 				<p id="prompt-help" class="sr-only">
-					Enter a message for the mock AI assistant. Press the Send button to submit.
+					Enter a message for the mock AI assistant.
+					Press the Send button to submit
+					Or press Control plus Enter or Command plus Enter to submit.
+					Press Enter to create a new line.
 				</p>
 
 				<textarea
@@ -116,6 +119,8 @@
 					rows="4"
 					:readonly="isLoading"
 					aria-describedby="prompt-help"
+					@keydown.ctrl.enter.prevent="submitPromptByKeyboard"
+					@keydown.meta.enter.prevent="submitPromptByKeyboard"
 				></textarea>
 
 				<div class="composer-actions">
@@ -201,6 +206,14 @@
 		resetApplicationState();
 		closeSettings();
 		announce('Application state reset to defaults.');
+	};
+
+	const submitPromptByKeyboard = async (event: KeyboardEvent) => {
+		event.preventDefault();
+
+		if (isSendDisabled.value) return;
+
+		await submitPrompt();
 	};
 
 	const scrollToBottom = async () => {
