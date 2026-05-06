@@ -4,7 +4,6 @@
 
 		<header class="page-header">
 			<div class="page-header-content">
-				<p class="eyebrow">Portfolio Project</p>
 				<h1>AI UI Quality Automation</h1>
 				<p class="page-description">
 					A mock AI assistant built as a controlled target for Playwright and accessibility testing. Interact with the assistant below to test UI interactions and accessibility compliance.
@@ -24,9 +23,11 @@
 
 <style scoped>
 	.app {
-		min-height: 100vh;
-		display: flex;
-		flex-direction: column;
+		height: 100%;
+		display: grid;
+		grid-template-rows: auto minmax(0, 1fr);
+		padding: 24px;
+		overflow: hidden;
 	}
 
 	.skip-link {
@@ -45,17 +46,13 @@
 		top: 6px;
 	}
 
-	.app-shell:focus {
-		outline: none;
-	}
-
 	.page-header {
-		padding: 30px;
+		padding: 25px;
 		border-radius: 24px;
 		background: #ffffff;
 		border: 1px solid #e5e7eb;
 		box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
-		margin: 0 auto 28px auto;
+		margin: 0 auto 16px auto;
 		max-width: 920px;
 		width: 100%;
 	}
@@ -65,17 +62,10 @@
 		margin: 0 auto;
 	}
 
-	.eyebrow {
-		margin-bottom: 12px;
-		font-size: 0.9rem;
-		color: #6366f1;
-		text-transform: uppercase;
-		letter-spacing: 0.12em;
-	}
-
 	.page-header h1 {
-		font-size: clamp(2rem, 4vw, 3rem);
+		font-size: clamp(1.6rem, 2vw, 2rem);
 		margin-bottom: 16px;
+		line-height: 1.1;
 	}
 
 	.page-description {
@@ -85,10 +75,20 @@
 
 	.app-shell {
 		max-width: 920px;
+		min-height: 0;
 		margin: 0 auto;
-		flex: 1;
 		display: grid;
 		gap: 28px;
 		width: 100%;
+	}
+	
+	.app-shell:focus {
+		outline: none;
+	}
+
+	@media (max-width: 640px) {
+		.app {
+			padding: 12px;
+		}
 	}
 </style>

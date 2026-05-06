@@ -46,6 +46,8 @@
 				</div>
 
 				<div
+					class="conversation-log"
+					ref="conversationLogRef"
 					role="log"
 					aria-live="polite"
 					aria-label="Conversation history"
@@ -108,6 +110,7 @@
 
 				<textarea
 					id="prompt-input"
+					class="composer-input"
 					v-model="prompt"
 					placeholder="Type your prompt here..."
 					rows="4"
@@ -142,12 +145,13 @@
 </template>
 
 <script lang="ts" setup>
-	import { ref, watch } from 'vue';
+	import { nextTick, ref, watch } from 'vue';
 	import { useChat } from '../composables/useChat';
 	import SettingsModal from './SettingsModal.vue';
 
 	const settingsOpen = ref(false);
 	const settingsButton = ref<HTMLButtonElement | null>(null);
+	const conversationLogRef = ref<HTMLElement | null>(null);
 	const statusMessage = ref('');
 
 	const {
@@ -199,18 +203,47 @@
 		announce('Application state reset to defaults.');
 	};
 
+	const scrollToBottom = async () => {
+		await nextTick();
+
+		const log = conversationLogRef.value;
+
+		if (!log) return;
+
+		log.scrollTo({
+			top: log.scrollHeight,
+			behavior: reducedMotionEnabled.value ? 'auto' : 'smooth',
+		});
+	};
+
 	watch(settingsOpen, (open) => {
 		if (!open) {
 			settingsButton.value?.focus();
 		}
 	});
+
+	watch(
+		messages,
+		() => {
+			scrollToBottom();
+		},
+		{ deep: true }
+	);
 </script>
 
 <style scoped>
-	.chat-interface,
+	.chat-interface {
+		display: grid;
+		gap: 24px;
+		min-height: 0;
+		height: 100%;
+	}
+
 	.chat-content {
 		display: grid;
+		grid-template-rows: minmax(0, 1fr) auto;
 		gap: 28px;
+		min-height: 0;
 	}
 
 	.sr-only {
@@ -227,7 +260,9 @@
 
 	.chat-section {
 		display: grid;
+		grid-template-rows: auto minmax(0, 1fr);
 		gap: 20px;
+		min-height: 0;
 	}
 
 	.chat-header {
@@ -318,6 +353,17 @@
 		outline-offset: 2px;
 	}
 
+	.conversation-log {
+		min-height: 0;
+		overflow-y: auto;
+		scroll-behavior: smooth;
+		padding-right: 4px;
+	}
+
+	html[data-reduced-motion="true"] .conversation-log {
+		scroll-behavior: auto;
+	}
+
 	.conversation-list {
 		list-style: none;
 		display: grid;
@@ -399,7 +445,12 @@
 		color: #111827;
 	}
 
-	textarea[readonly] {
+	.composer-input {
+		width: 100%;
+		margin: 0 auto;
+	}
+
+	.composer-input[readonly] {
 		cursor: progress;
 	}
 
@@ -446,15 +497,30 @@
 		}
 	}
 
-	@media (max-width: 640px) {
-		.chat-toolbar {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 12px;
-		}
-
-		.send-button {
-			width: 100%;
-		}
+@media (max-width: 640px) {
+	.page-header {
+		padding: 16px;
+		margin-bottom: 12px;
 	}
+
+	.page-header h1 {
+		margin-bottom: 8px;
+	}
+
+	.page-description {
+		font-size: 0.9rem;
+	}
+
+	.chat-content {
+		gap: 16px;
+	}
+
+	.chat-section {
+		gap: 12px;
+	}
+
+	.chat-toolbar {
+		gap: 10px;
+	}
+}
 </style>
