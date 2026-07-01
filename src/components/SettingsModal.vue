@@ -196,7 +196,6 @@
 	.settings-description,
 	.maintenance-section p {
 		margin: 0;
-		color: var(--muted);
 		font-size: 0.95rem;
 		line-height: 1.5;
 	}
@@ -243,7 +242,6 @@
 		padding: 8px 10px;
 		border-radius: 8px;
 		border: 1px solid var(--border);
-		background: var(--control-bg);
 		color: var(--text);
 		font: inherit;
 	}
@@ -291,7 +289,7 @@
 		border-radius: 9px;
 		border: 1px solid var(--border);
 		background: var(--control-bg);
-		color: var(--text);
+		color: var(--control-text);
 		font-size: 0.95rem;
 		font-weight: 700;
 		cursor: pointer;

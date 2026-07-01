@@ -70,7 +70,6 @@
 
 	.page-description {
 		max-width: 700px;
-		color: #4b5563;
 	}
 
 	.app-shell {

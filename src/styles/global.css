@@ -13,14 +13,15 @@
 
   --bg: #f9fafb;
   --surface: #ffffff;
-  --border: #e5e7eb;
-  --text: #111827;
-  --muted: #6b7280;
+  --border: #000;
+  --text: #000;
+  --muted: #545964;
   --accent: #6366f1;
   --input: #ffffff;
-  --input-border: #d1d5db;
-  --control-bg: #f3f4f6;
-  --control-hover: #e5e7eb;
+  --input-border:#000;
+  --control-bg: #435A60;
+  --control-text: #fff;
+  --control-hover: #1B2327;
 }
 
 html[data-theme="dark"] {
@@ -56,7 +57,6 @@ html, body, #app {
 
 body {
   background: var(--bg);
-  color: var(--text);
 }
 
 textarea {

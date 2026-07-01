@@ -293,7 +293,6 @@
 	}
 
 	.chat-description {
-		color: #6b7280;
 		font-size: 0.95rem;
 		margin: 0;
 	}
@@ -335,7 +334,7 @@
 		border-radius: 8px;
 		border: 1px solid var(--border);
 		background: var(--control-bg);
-		color: var(--text);
+		color: var(--control-text);
 		font-size: 0.9rem;
 		font-weight: 600;
 		cursor: pointer;
@@ -428,7 +427,7 @@
 
 	.message p {
 		margin: 0;
-		color: #111827;
+		color: var(--text);
 		line-height: 1.75;
 	}
 
@@ -452,10 +451,15 @@
 		gap: 12px;
 	}
 
+	.composer-input::placeholder {
+		color: var(--muted);
+		opacity: 1;
+	}
+
 	.composer-label {
 		font-size: 1rem;
 		font-weight: 600;
-		color: #111827;
+		color: var(--text);
 	}
 
 	.composer-input {
@@ -487,6 +491,10 @@
 		cursor: pointer;
 		line-height: 1;
 		min-height: 0;
+	}
+	
+	.send-button:hover:not(:disabled) {
+		background: #3730a3;
 	}
 
 	.send-button:disabled {
